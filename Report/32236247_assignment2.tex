@@ -1,0 +1,44 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\title{FIT2102 Assignment 2}
+\date{}
+\author{Low Jun Jie - 32236247}
+
+\begin{document}
+	\maketitle
+	\section{Main Strategy Implementation}
+	The implementation of the bot is based on the \emph{Blackjack Strategy Chart}, which is a solved chart for the best actions to play at any certain hand. It can be found at : \textbf{https://www.blackjackapprenticeship.com/blackjackstrategy-charts/}\\
+	In most of the strategy, it is a \emph{Deterministic} as per the \emph{Strategy Chart}. \\
+	In general, based on the \emph{Current Hand, Dealer's Upcard and Points Available}, it decides on the next \textbf{Action} to be played.\\
+	The main decision making is based on \emph{Pattern Matching} of \textbf{Haskell}, this allows us to know in what round are we in. Most notably, there will be the \emph{Initial Bidding Round (No Memory), Normal Bidding Round, Playing Round}. During the \emph{Normal Bidding Round}, the card counting is utilized to determine if we should bid higher or lower.\\
+	\section{Design of the Code}
+	The data structure used for storing the memory object is a composite data structure, storing the \textbf{Past Actions, CardCountingFlag and Dealt Cards} as lists and a boolean.\\
+	The use of the list for both \emph{Card Counting and Past Actions} allows us to utilize the powerful toolkit provided in \emph{Data.List}.\\
+	The different functions dictating the actions to play are called based on different circumstances. Once the function is \emph{Selected} it then calls them with the same arguments, this would reduce the redundancy of code for calling different functions.\\
+	The \textbf{Card Counting} mechanism is done by using lists, although expensive in list operations, it is not ran often (only the bidding round), making it not too significant.\\
+	In general the implementation on \emph{Haskell} focuses on reusing the functions given, especially \emph{liftM2}, which helps to construct the \textbf{Card Parser}. Also using the class of \textbf{Monads} with the use of \emph{Binds}, which allows for complex \emph{Parser Combinators} to be done easily.
+
+\newpage
+	\section{Memory and Parsing}
+	The \textbf{BNF} grammar for the memory of storing Actions.\\
+		$<Memory>$ ::= $<actions><separator><trackedAllCards><separator><cards>$\\
+		$<actions>$ ::= $<action><actions>$ $|$ $<action>$\\
+		$<action>$ ::= $<move><value>$\\
+		$<value>$ ::= $<digit><value>$ $|$ $<digit>$\\
+		$<cards>$ ::= $<card><cards>$ $|$ $<card>$\\
+		$<card>$ ::= $<suit><rank>$\\	
+		$<move>$ ::= ``BD'' $|$ ``HT'' $|$ ``SD'' $|$ ``SP''$|$ ``DD'' $|$ ``IN''\\
+		$<suit>$ ::= ``S'' $|$ ``C'' $|$ ``D'' $|$ ``H''\\
+		$<rank>$ ::= ``A'' $|$ ``2'' $|$ ``3'' $|$ ``4'' $|$ ``5'' $|$ ``6'' $|$ ``7'' $|$ ``8'' $|$ ``9'' $|$ ``T'' $|$ ``J'' $|$ ``Q'' $|$ ``K''\\
+		$<digit>$ ::= ``0'' $|$ ``1'' $|$ ``2'' $|$ ``3'' $|$ ``4'' $|$ ``5'' $|$ ``6'' $|$ ``7'' $|$ ``8'' $|$ ``9''\\
+		$<separator>$ ::= ``$|$''\\
+		$<trackedAllCards>$ ::= ``T'' $|$ ``F''\\
+	The memory string is stored according to the \textbf{BNF Grammar} above, it is updated and passed every function call to maintain the memory.\\
+	To parse the memory string, \emph{Parser Combinator} is used extensively to fully parse the memory string into usable data.\\
+	It starts by parsing the \emph{actions}, which is parser combinator of the list of parsers of different actions, in which they also parse along the values associated with them.It finishes off by parsing also a separator character (Character Parser) that parses the separator (althought ignored).\\
+	Second Parse is parsing the boolean value, it attempts to Parse a character indicating the boolean value, which is \emph{transformed} into the corresponding Boolean Value in \emph{Haskell}. It also finishes off with a separator parse (although character is ignored).\\
+	Third Parse is also like the first Parse of the list of actions, but this time it is the list of cards. There are individual Parser for cards, which are built by combining the Parsers of different parts of the Card and then forming the \emph{Card Parser}. Then a list of Cards is parsed.\\ 
+	All the above is combined together to form a resultant Parser that parses the \emph{Memory String} into a memory data structure.
+\end{document}
